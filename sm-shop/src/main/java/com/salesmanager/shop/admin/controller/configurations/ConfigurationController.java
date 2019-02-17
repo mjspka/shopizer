@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -14,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,6 +24,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import com.salesmanager.core.business.exception.ServiceException;
+import com.salesmanager.core.business.modules.email.Email;
 import com.salesmanager.core.business.modules.email.EmailConfig;
 import com.salesmanager.core.business.services.system.EmailService;
 import com.salesmanager.core.business.services.system.MerchantConfigurationService;
@@ -32,6 +36,8 @@ import com.salesmanager.shop.admin.controller.ControllerConstants;
 import com.salesmanager.shop.admin.model.web.ConfigListWrapper;
 import com.salesmanager.shop.admin.model.web.Menu;
 import com.salesmanager.shop.constants.Constants;
+import com.salesmanager.shop.utils.EmailUtils;
+import com.salesmanager.shop.utils.LabelUtils;
 
 
 
@@ -39,6 +45,8 @@ import com.salesmanager.shop.constants.Constants;
 @Controller
 public class ConfigurationController {
 	
+	private static final String EMAIL_TEMPLATE_TEST_FTL = "email_template_test.ftl";
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(ConfigurationController.class);
 	
 	@Inject
@@ -46,6 +54,12 @@ public class ConfigurationController {
 	
 	@Inject
 	private EmailService emailService;
+	
+	@Inject
+	private EmailUtils emailUtils;
+	
+	@Inject
+	private LabelUtils messages;
 
 	@Inject
 	Environment env;
@@ -196,6 +210,52 @@ public class ConfigurationController {
 		return ControllerConstants.Tiles.Configuration.email;
 	}
 	
+	@PreAuthorize("hasRole('AUTH')")
+	@RequestMapping(value="/admin/configuration/testEmailConfiguration.html", method=RequestMethod.POST)
+	public String testEmailSettings(@ModelAttribute("configuration") EmailConfig config, BindingResult result, Model model, HttpServletRequest request, Locale locale) throws Exception {
+		
+		setEmailConfigurationMenu(model, request);
+		JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+    	mailSender.setHost(config.getHost());
+        mailSender.setPort(Integer.parseInt(config.getPort()));
+         
+        mailSender.setUsername(config.getUsername());
+        mailSender.setPassword(config.getPassword());
+         
+        Properties props = mailSender.getJavaMailProperties();
+        props.put("mail.transport.protocol", config.getProtocol());
+        props.put("mail.smtp.auth", config.isSmtpAuth());
+        props.put("mail.smtp.starttls.enable", config.isStarttls());
+        props.put("mail.debug", "true");
+        
+        //Connection timeout properties
+        props.put("mail.smtp.connectiontimeout", env.getProperty("shop.mail.connectiontimeout", Integer.class));
+        props.put("mail.smtp.timeout", env.getProperty("shop.mail.timeout", Integer.class));
+        props.put("mail.smtp.writetimeout", env.getProperty("shop.mail.writetimeout", Integer.class));
+        //If mail is behind the proxy
+        Boolean proxyEnabled = env.getProperty("shop.proxy.enabled", Boolean.class);
+        if (proxyEnabled) {
+        	props.put("mail.smtp.proxy.host", env.getProperty("shop.proxy.host"));
+        	props.put("mail.smtp.proxy.port", env.getProperty("shop.proxy.port", Integer.class));
+        }
+        //Test the email connection
+        mailSender.testConnection();
+		
+        // populte EmailConfig model from UI values
+        EmailConfig emailConfig = new EmailConfig();
+ 		emailConfig.setProtocol(config.getProtocol());
+ 		emailConfig.setHost(config.getHost());
+ 		emailConfig.setPort(config.getPort());
+ 		emailConfig.setUsername(config.getUsername());
+ 		emailConfig.setPassword(config.getPassword());
+ 		emailConfig.setSmtpAuth(config.isSmtpAuth());
+ 		emailConfig.setStarttls(config.isStarttls());
+		
+ 		model.addAttribute("configuration", emailConfig);
+		model.addAttribute("success","success");
+		return ControllerConstants.Tiles.Configuration.email;
+	}
+
 	private void setConfigurationMenu(Model model, HttpServletRequest request) throws Exception {
 		
 		Map<String,String> activeMenus = new HashMap<String,String>();

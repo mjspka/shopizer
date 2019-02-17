@@ -96,7 +96,7 @@ public class ReferenceController {
 				for(Zone zone : zones) {
 				
 					@SuppressWarnings("rawtypes")
-					Map entry = new HashMap();
+					Map entry = new TreeMap();
 					entry.put("name", zone.getName());
 					entry.put("code", zone.getCode());
 					entry.put("id", zone.getId());

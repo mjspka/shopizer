@@ -23,6 +23,15 @@ public class EmailServiceImpl implements EmailService {
 	private HtmlEmailSender sender;
 	
 	@Override
+	public void testHtmlEmail(MerchantStore store, Email email) throws ServiceException, Exception {
+
+		EmailConfig emailConfig = getEmailConfiguration(store);
+		
+		sender.setEmailConfig(emailConfig);
+		sender.send(email);
+	}
+	
+	@Override
 	public void sendHtmlEmail(MerchantStore store, Email email) throws ServiceException, Exception {
 
 		EmailConfig emailConfig = getEmailConfiguration(store);

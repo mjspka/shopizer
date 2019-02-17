@@ -15,7 +15,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.5.3.RELEASE</version>
+		<version>1.5.4.RELEASE</version>
 	</parent>
 
 
@@ -132,8 +132,8 @@
 			<artifactId>json-simple</artifactId>
 			<version>${simple-json-version}</version>
 		</dependency>
-		
-		<!-- sm-search -->		
+
+		<!-- sm-search -->
 		<dependency>
 			<groupId>com.shopizer</groupId>
 			<artifactId>sm-search</artifactId>
@@ -148,9 +148,9 @@
 					<artifactId>jest</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency> 
-		
-		<!-- Elastic search -->				
+		</dependency>
+
+		<!-- Elastic search -->
 		<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch</artifactId>

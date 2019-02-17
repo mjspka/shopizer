@@ -94,6 +94,9 @@
 	                        		
 	                        		
 	                        		<div class="form-actions">
+                  						<div class="pull-left">
+                  							<button type="submit" class="btn btn-info" onclick="form.action=='/admin/configuration/testEmailConfiguration.html'"><s:message code="button.label.test" text="Test"/></button>
+                  						</div>
                   						<div class="pull-right">
                   							<button type="submit" class="btn btn-success"><s:message code="button.label.submit" text="Submit"/></button>
                   						</div>
